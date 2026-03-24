@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renew Admin – Super Constructor de Flujos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+       <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#050505',      
+                        darkSurface: '#0B0F1A', 
+                        darkCard: '#111827',
+                        tealAccent: '#00f5d4',
+                        limeAccent: '#daff00',
+                        yellowAccent: '#ffcc00',
+                        orangeAccent: '#fbb714',
+                        bgLight: '#f4f7f6', // Premium light background
+                        surfaceLight: '#ffffff',
+                        bgDark: '#050505',
+                        surfaceDark: '#0B0F1A'
+                    },
+                    boxShadow: {
+                        'premium': '0 10px 40px -10px rgba(0, 0, 0, 0.5)',
+                        'teal-glow': '0 0 20px rgba(0, 245, 212, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+      
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+
+      .hide-scrollbar::-webkit-scrollbar { display: none; }
+      
+      #main-canvas::-webkit-scrollbar {
+          height: 6px;
+          background: transparent;
+      }
+      #main-canvas::-webkit-scrollbar-thumb {
+          background: rgba(0, 245, 212, 0.1);
+          border-radius: 10px;
+      }
+      
+      .scroll-container-fases::-webkit-scrollbar {
+          height: 6px;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+      }
+      .scroll-container-fases::-webkit-scrollbar-thumb {
+          background: #00f5d4;
+          border-radius: 10px;
+      }
+
+      #main-canvas {
+          overflow-x: hidden !important;
+          flex: 1;
+          transition: all 0.5s ease;
+      }
+      
+      .sidebar-item-active {
+        background: rgba(0, 245, 212, 0.08);
+        border-right: 3px solid #00f5d4;
+        color: #00f5d4 !important;
+      }
+
+      .btn-premium {
+        background: #00f5d4;
+        color: #000;
+        font-weight: 700;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 15px rgba(0, 245, 212, 0.2);
+        border: none;
+        cursor: pointer;
+      }
+      .btn-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 245, 212, 0.4);
+      }
+
+      .btn-secondary-premium {
+        background: #1a1a1a;
+        color: #fff;
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        border: 1px solid #333;
+      }
+
+      /* Modal Animation */
+      .animate-modal-in {
+        animation: modalIn 0.3s ease forwards;
+      }
+      @keyframes modalIn {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      .nuclear-visible {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          pointer-events: auto !important;
+          z-index: 9999 !important;
+      }
+      .nuclear-hidden {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+      }
+
+      .arrow-fixed {
+          position: fixed !important;
+          bottom: 0;
+          top: 10rem;
+          width: 6rem;
+          z-index: 200 !important;
+          display: flex !important;
+          align-items: center;
+          transition: all 0.3s;
+          pointer-events: auto;
+      }
+      #ctrl-scroll-left { left: 16rem; }
+      #ctrl-scroll-right { right: 0; }
+      
+      .arrow-circle {
+          background: rgba(0, 245, 212, 0.05);
+          border: 1px solid rgba(0, 245, 212, 0.1);
+          border-radius: 9999px;
+          padding: 1rem;
+          margin: 1rem;
+          transition: all 0.2s;
+      }
+      .arrow-fixed:hover .arrow-circle {
+          background: rgba(0, 245, 212, 0.15);
+          transform: scale(1.1);
+      }
+
+      #admin-sidebar {
+          transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.4s;
+      }
+
+      .admin-sidebar-collapsed {
+          width: 5.5rem !important; 
+          overflow-x: hidden;
+      }
+      
+      .admin-sidebar-collapsed .nav-text, 
+      .admin-sidebar-collapsed #logo-text_sub,
+      .admin-sidebar-collapsed #logo-text_main,
+      .admin-sidebar-collapsed .footer-text,
+      .admin-sidebar-collapsed .theme-text,
+      .admin-sidebar-collapsed #sub-auto,
+      .admin-sidebar-collapsed nav p,
+      .admin-sidebar-collapsed .nav-item i:last-child,
+      .admin-sidebar-collapsed #logo-container {
+          display: none !important;
+      }
+
+      .admin-sidebar-collapsed .sidebar-header {
+          padding: 0 !important;
+          justify-content: center !important;
+      }
+
+      .admin-sidebar-collapsed .nav-item {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          padding: 0 !important;
+          margin: 0.5rem auto !important;
+          width: 3.5rem !important;
+          height: 3.5rem !important;
+          gap: 0 !important;
+          border-right: none !important;
+      }
+
+      .admin-sidebar-collapsed .sidebar-item-active {
+          border-left: 3px solid #00f5d4 !important;
+          border-right: none !important;
+          background: rgba(0, 245, 212, 0.1) !important;
+      }
+
+      .admin-sidebar-collapsed .nav-item div {
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          gap: 0 !important;
+      }
+
+      .admin-sidebar-collapsed .nav-item i {
+          font-size: 1.4rem !important;
+          margin: 0 !important;
+      }
+
+      .admin-sidebar-collapsed #btn-theme-toggle {
+          justify-content: center !important;
+          padding: 1.5rem 0 !important;
+          gap: 0 !important;
+      }
+
+      .admin-sidebar-collapsed .footer-user-info {
+          justify-content: center !important;
+          padding: 0 !important;
+          gap: 0 !important;
+      }
+
+      .admin-sidebar-collapsed #btn-reset-db {
+          padding: 1rem 0 !important;
+          justify-content: center !important;
+      }
+
+      /* Custom Aqua Green Box Styles */
+      .aqua-label {
+          background: rgba(0, 245, 212, 0.1);
+          border: 1px solid rgba(0, 245, 212, 0.3);
+          color: #00f5d4;
+          padding: 6px 12px;
+          border-radius: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          font-size: 9px;
+          letter-spacing: 0.2em;
+          display: inline-flex;
+          align-items: center;
+          margin-bottom: 0.75rem;
+          box-shadow: 0 4px 15px rgba(0, 245, 212, 0.05);
+      }
+
+      .aqua-title-box {
+          background: rgba(0, 245, 212, 0.05);
+          border: 1px solid rgba(0, 245, 212, 0.2);
+          padding: 1.25rem 2.5rem;
+          border-radius: 2rem;
+          display: inline-block;
+          box-shadow: 0 10px 40px rgba(0, 245, 212, 0.05);
+          backdrop-filter: blur(10px);
+      }
+    </style>
+</head>
+<body class="bg-bgLight dark:bg-bgDark transition-colors duration-300 text-gray-800 dark:text-gray-200 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside id="admin-sidebar" class="w-64 border-r border-gray-100 dark:border-gray-900 bg-white dark:bg-[#050505] flex flex-col justify-between z-40">
+        <div>
+            <div class="sidebar-header h-24 flex items-center px-8 gap-3">
+                <img src="./assets/images/renew copia logo.png" class="w-10 h-10 object-contain brightness-0 invert dark:brightness-100 dark:invert-0" alt="RENEW OS Logo">
+                <div id="logo-container" class="flex flex-col">
+                    <h1 id="logo-text_main" class="text-2xl font-black text-tealAccent leading-none tracking-tighter uppercase">RENEW<span class="text-gray-900 dark:text-white">OS</span></h1>
+                    <p id="logo-text_sub" class="text-[9px] uppercase tracking-[0.2em] font-black text-gray-400 dark:text-gray-600 mt-1">Intelligence</p>
+                </div>
+            </div>
+            
+            <nav class="mt-8 px-4 space-y-1" id="admin-nav">
+                <a href="#" data-view="constructor" class="nav-item sidebar-item-active flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all font-semibold text-sm">
+                    <i class="fa-solid fa-layer-group text-lg"></i> 
+                    <span class="nav-text">Dashboard</span>
+                </a>
+                <a href="#" data-view="crm" class="nav-item flex items-center gap-4 px-4 py-3.5 text-gray-500 dark:text-gray-400 hover:text-tealAccent dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all font-semibold text-sm">
+                    <i class="fa-solid fa-users-gear text-lg"></i> 
+                    <span class="nav-text">CRM Maestro</span>
+                </a>
+                <a href="#" data-view="usuarios" class="nav-item flex items-center gap-4 px-4 py-3.5 text-gray-500 dark:text-gray-400 hover:text-tealAccent dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all font-semibold text-sm">
+                    <i class="fa-solid fa-user-group text-lg"></i> 
+                    <span class="nav-text">Equipo</span>
+                </a>
+                <a href="#" data-view="kanban" class="nav-item flex items-center gap-4 px-4 py-3.5 text-gray-500 dark:text-gray-400 hover:text-tealAccent dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all font-semibold text-sm">
+                    <i class="fa-solid fa-chart-simple text-lg"></i> 
+                    <span class="nav-text">Kanban Global</span>
+                </a>
+
+                <div class="pt-4 pb-2 px-4">
+                  <p class="text-[10px] uppercase font-bold text-gray-600 tracking-widest pl-2">System</p>
+                </div>
+
+                <!-- Automatizaciones Group -->
+                <div class="px-0">
+                    <button id="btn-toggle-auto" class="nav-item w-full flex items-center justify-between px-4 py-3.5 text-gray-500 dark:text-gray-400 hover:text-tealAccent dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-xl transition-all font-semibold text-sm group">
+                        <div class="flex items-center gap-4">
+                            <i class="fa-solid fa-bolt text-lg text-yellowAccent"></i> 
+                            <span class="nav-text">Automations</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-300 nav-text group-[.open]:rotate-180"></i>
+                    </button>
+                    
+                    <div id="sub-auto" class="hidden pl-12 space-y-1 mt-1 border-l border-gray-100 dark:border-gray-800 ml-8 transition-all">
+                        <a href="#" data-view="marketing" class="nav-item block py-2 text-xs text-gray-500 hover:text-tealAccent transition-colors">Email Drip</a>
+                        <a href="#" data-view="whatsapp" class="nav-item block py-2 text-xs text-gray-500 hover:text-green-400 transition-colors">WhatsApp Drip</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        
+        <div class="p-6 space-y-4">
+            <button id="btn-theme-toggle" class="w-full flex items-center gap-4 px-4 py-3 text-gray-500 hover:text-white transition-all text-sm font-semibold">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:block"></i>
+                <span class="theme-text">Theme</span>
+            </button>
+
+            <div class="pt-6 border-t border-gray-100 dark:border-gray-900">
+                <div class="flex items-center gap-4 mb-6 footer-user-info">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-tealAccent to-blue-500 flex items-center justify-center text-black font-black shadow-lg shadow-tealAccent/10">SA</div>
+                    <div class="footer-text">
+                        <h3 class="text-gray-900 dark:text-white text-xs font-bold">Julian Vercetti</h3>
+                        <p class="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tight">System Admin</p>
+                    </div>
+                </div>
+                <button id="btn-reset-db" class="w-full py-3 text-[10px] uppercase font-bold text-red-500/60 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition-all flex items-center justify-center gap-2 border border-red-500/10">
+                    <i class="fa-solid fa-power-off"></i> <span class="footer-text">Shutdown System</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <!-- Header -->
+        <header class="h-20 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-10">
+            <div class="flex items-center gap-8 flex-1">
+                <button id="admin-hamburger-btn" class="text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                
+                <div class="relative w-full max-w-md">
+                  <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm"></i>
+                  <input type="text" placeholder="Search customer records..." class="w-full bg-transparent border-none focus:ring-0 text-sm placeholder:text-gray-400 dark:placeholder:text-gray-600 text-gray-900 dark:text-white pl-12">
+                </div>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-2">
+                  <button id="btn-notifications" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-tealAccent dark:hover:text-white transition-all relative">
+                    <i class="fa-solid fa-bell text-lg"></i>
+                    <span id="notifications-badge" class="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-orange-500 rounded-full border-2 border-white dark:border-darkBg hidden animate-pulse"></span>
+                  </button>
+                  <button id="btn-header-chat" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-tealAccent dark:hover:text-white transition-all">
+                    <i class="fa-solid fa-comment-dots text-lg"></i>
+                  </button>
+                  <div class="relative group">
+                    <button id="btn-header-settings" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 dark:text-gray-500 hover:text-tealAccent dark:hover:text-white transition-all">
+                      <i class="fa-solid fa-gear text-lg"></i>
+                    </button>
+                    <!-- Settings Dropdown -->
+                    <div id="settings-dropdown" class="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl py-3 z-[100] hidden animate-fadeIn origin-top-right">
+                        <div class="px-4 py-2 border-b border-gray-50 dark:border-gray-800 mb-2">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ajustes Rápidos</p>
+                        </div>
+                        <button id="btn-menu-edit-profile" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-tealAccent/5 hover:text-tealAccent transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-user-pen text-xs"></i>
+                            </div>
+                            Editar Perfil
+                        </button>
+                        <a href="index.html" class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-blue-500/5 hover:text-blue-500 transition-all group">
+                            <div class="w-8 h-8 rounded-lg bg-gray-50 dark:bg-white/5 flex items-center justify-center group-hover:rotate-12 transition-transform">
+                                <i class="fa-solid fa-mobile-screen-button text-xs"></i>
+                            </div>
+                            Versión Móvil
+                        </a>
+                        <div class="mt-2 pt-2 border-t border-gray-50 dark:border-gray-800">
+                             <button class="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-red-500 hover:bg-red-500/5 transition-all">
+                                <div class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+                                    <i class="fa-solid fa-power-off text-xs"></i>
+                                </div>
+                                Cerrar Sesión
+                            </button>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="h-8 w-[1px] bg-gray-800 mx-2"></div>
+
+                <button id="btn-global-action" class="btn-premium flex items-center gap-3 px-6 py-3">
+                    <i class="fa-solid fa-plus text-sm"></i> 
+                    <span class="text-xs uppercase tracking-widest font-black">Create Task</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- View Context -->
+        <div class="px-10 py-10 bg-white dark:bg-transparent border-b border-gray-100 dark:border-none">
+            <div class="aqua-title-box">
+                <h2 id="view-title" class="text-4xl font-black text-gray-900 dark:text-white tracking-tighter leading-none mb-1">System Engine</h2>
+                <p id="view-desc" class="text-[10px] uppercase tracking-[0.3em] font-black text-gray-400 dark:text-gray-600">Initializing Core Protocols...</p>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="flex-1 overflow-auto p-10 bg-bgLight dark:bg-[#050505] transition-colors" id="main-canvas">
+            <!-- Rendered by admin-app.js -->
+        </div>
+
+    </main>
+
+    <!-- MODAL: CREAR PIPELINE -->
+    <div id="modal-nuclear-pip" class="fixed inset-0 bg-black/60 backdrop-blur-sm nuclear-hidden flex items-center justify-center z-[100] p-6">
+        <div class="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 w-full max-w-[440px] rounded-[2.5rem] shadow-2xl p-10 animate-scaleIn">
+            <h3 class="text-xl text-gray-800 dark:text-white font-bold mb-4">Crear Nuevo Pipeline</h3>
+            <label class="aqua-label">Nombre del Ecosistema</label>
+            <input type="text" id="inp-pip-nombre" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Ej: Renew HVAC">
+            
+            <label class="aqua-label">Color Hexadecimal (UI Móvil)</label>
+            <div class="flex gap-3 mb-6">
+                <input type="color" id="inp-pip-color" value="#f59e0b" class="h-12 w-12 rounded cursor-pointer bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 p-1">
+                <input type="text" id="inp-pip-hex" value="#f59e0b" class="flex-1 bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white focus:border-tealAccent focus:outline-none" readonly>
+            </div>
+
+            <div class="flex gap-3 justify-end mt-6">
+                <button class="btn-cancel text-gray-500 dark:text-gray-400 dark:text-white px-4 py-2">Cancelar</button>
+                <button id="btn-save-pipeline" class="bg-tealAccent text-gray-800 dark:text-white px-6 py-2 rounded font-medium hover:bg-teal-500 shadow-lg shadow-tealAccent/20">Crear Pipeline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AÑADIR CAMPO -->
+    <div id="modal-nuclear-cam" class="fixed inset-0 bg-black/60 backdrop-blur-sm nuclear-hidden flex items-center justify-center z-[100] p-6">
+        <div class="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 w-full max-w-[480px] rounded-[2.5rem] shadow-2xl p-10 animate-scaleIn">
+            <h3 class="text-xl text-gray-800 dark:text-white font-bold mb-4">Añadir Campo Dinámico</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Fase de destino:<br><strong id="lbl-fase-destino" class="text-tealAccent">Fase X</strong></p>
+            
+            <input type="hidden" id="inp-cam-fase-id">
+
+            <label class="aqua-label">Etiqueta de la Pregunta / Input</label>
+            <input type="text" id="inp-cam-etiqueta" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Ej: Capacidad del Sistema (Tons)">
+            
+            <label class="aqua-label">Tipo de Campo</label>
+            <select id="inp-cam-tipo" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none">
+                <option value="Texto">Texto Simple</option>
+                <option value="Número">Numérico</option>
+                <option value="Desplegable">Selector Desplegable (Select)</option>
+                <option value="Archivo">Subida de Archivos (Foto/PDF)</option>
+            </select>
+
+            <div id="wrap-opciones" class="hidden">
+                <label class="aqua-label">Opciones (Separadas por coma)</label>
+                <input type="text" id="inp-cam-opciones" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Ej: Opción 1, Opción 2, Opción 3">
+            </div>
+
+            <div class="flex gap-3 justify-end mt-6">
+                <button class="btn-cancel text-gray-500 dark:text-gray-400 dark:text-white px-4 py-2">Cancelar</button>
+                <button id="btn-save-campo" class="bg-tealAccent text-gray-800 dark:text-white px-6 py-2 rounded font-medium hover:bg-teal-500 shadow-lg shadow-tealAccent/20">Agregar a la UI</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CREAR FASE -->
+    <div id="modal-nuclear-fas" class="fixed inset-0 bg-black/60 backdrop-blur-sm nuclear-hidden flex items-center justify-center z-[100] p-6">
+        <div class="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 w-full max-w-[420px] rounded-[2.5rem] shadow-2xl p-10 animate-scaleIn">
+            <h3 class="text-xl text-gray-800 dark:text-white font-bold mb-4">Nueva Fase del Workflow</h3>
+            <label class="aqua-label">Nombre de la Fase</label>
+            <input type="text" id="inp-fas-nombre" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-6 focus:border-tealAccent focus:outline-none" placeholder="Ej: Instalación Técnica">
+            
+            <div class="flex gap-3 justify-end mt-2">
+                <button class="btn-cancel text-gray-500 dark:text-gray-400 dark:text-white px-4 py-2">Cancelar</button>
+                <button id="btn-save-fase" class="bg-tealAccent text-gray-800 dark:text-white px-6 py-2 rounded font-medium hover:bg-teal-500 shadow-lg shadow-tealAccent/20">Guardar Fase</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AÑADIR CLIENTE (CRM) -->
+    <div id="modal-nuclear-cli" class="fixed inset-0 bg-black/60 backdrop-blur-sm nuclear-hidden flex items-center justify-center z-[100] p-6">
+        <div class="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 w-full max-w-[620px] max-h-[90vh] overflow-y-auto rounded-[3rem] shadow-2xl p-12 hide-scrollbar animate-scaleIn">
+            <h3 class="text-xl text-gray-800 dark:text-white font-bold mb-4">Añadir Nuevo Cliente (CRM Maestro)</h3>
+            
+            <label class="aqua-label">State ID</label>
+            <input type="text" id="inp-cli-state" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="ID del Estado...">
+            
+            <div class="flex gap-4 mb-4">
+                <div class="flex-1">
+                    <label class="aqua-label">Nombre *</label>
+                    <input type="text" id="inp-cli-nombre" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white focus:border-tealAccent focus:outline-none" placeholder="Michael">
+                </div>
+                <div class="flex-1">
+                    <label class="aqua-label">Apellido *</label>
+                    <input type="text" id="inp-cli-apellido" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white focus:border-tealAccent focus:outline-none" placeholder="Chen">
+                </div>
+            </div>
+
+            <label class="aqua-label">Foto / ID Image</label>
+            <div id="drop-cli-foto" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 border-dashed rounded p-4 text-center text-gray-500 dark:text-gray-400 cursor-pointer mb-4 hover:border-tealAccent transition-colors relative min-h-[100px] flex flex-col items-center justify-center">
+                <input type="file" id="inp-cli-foto" class="hidden" accept="image/*">
+                <div id="cli-foto-preview" class="hidden w-full h-32 mb-2 rounded bg-cover bg-center"></div>
+                <div id="cli-foto-placeholder">
+                    <p class="text-tealAccent font-bold">+ Add Image</p>
+                    <p class="text-xs mt-1">File size must not exceed 3 Mb.</p>
+                </div>
+            </div>
+            
+            <label class="aqua-label">Date of birth</label>
+            <input type="date" id="inp-cli-dob" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 bg-[color-scheme:dark] text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none">
+
+            <div class="flex gap-4 mb-4">
+                <div class="flex-1">
+                    <label class="aqua-label">Teléfono *</label>
+                    <input type="tel" id="inp-cli-tel" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white focus:border-tealAccent focus:outline-none" placeholder="+1 555-5555">
+                </div>
+                <div class="flex-1">
+                    <label class="aqua-label">E-mail</label>
+                    <input type="email" id="inp-cli-email" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white focus:border-tealAccent focus:outline-none" placeholder="correo@email.com">
+                </div>
+            </div>
+
+            <label class="aqua-label">Address</label>
+            <input type="text" id="inp-cli-direccion" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Ej: 789 Brickell Ave, Miami">
+
+            <label class="aqua-label">Empresa</label>
+            <input type="text" id="inp-cli-empresa" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Empresa asociada...">
+
+            <label class="aqua-label">Estado del Cliente</label>
+            <select id="inp-cli-estado" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-6 focus:border-tealAccent focus:outline-none">
+                <option value="Not selected">Not selected</option>
+                <option value="Lead">Lead</option>
+                <option value="En Proceso">En Proceso</option>
+                <option value="Completado">Completado</option>
+            </select>
+
+            <div class="flex gap-3 justify-end mt-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button class="btn-cancel text-gray-500 dark:text-gray-400 dark:text-white px-4 py-2">Cancelar</button>
+                <button id="btn-save-cliente" class="bg-tealAccent text-gray-800 dark:text-white px-6 py-2 rounded font-medium hover:bg-teal-500 shadow-lg shadow-tealAccent/20">Guardar Datos</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AÑADIR USUARIO / TRABAJADOR -->
+    <div id="modal-nuclear-usr" class="fixed inset-0 bg-black/60 backdrop-blur-sm nuclear-hidden flex items-center justify-center z-[100] p-6">
+        <div class="bg-white dark:bg-[#121212] border border-gray-100 dark:border-white/5 w-full max-w-[600px] rounded-[3rem] shadow-2xl p-12 max-h-[95vh] overflow-y-auto hide-scrollbar animate-scaleIn">
+            <h3 id="modal-usr-title" class="text-xl text-gray-800 dark:text-white font-bold mb-4">Añadir Trabajador</h3>
+            <input type="hidden" id="inp-usr-id">
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="aqua-label">Nombre(s)</label>
+                    <input type="text" id="inp-usr-nombre" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Carlos">
+                </div>
+                <div>
+                    <label class="aqua-label">Apellido(s)</label>
+                    <input type="text" id="inp-usr-apellido" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Rodríguez">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="aqua-label">Correo Electrónico *</label>
+                <input type="email" id="inp-usr-email" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-2 focus:border-tealAccent focus:outline-none" placeholder="ejemplo@renewsolar.com">
+            </div>
+
+            <div class="mb-4">
+                <label class="aqua-label">Foto de Perfil</label>
+                <div id="drop-usr-foto" class="w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-tealAccent transition-all relative overflow-hidden group">
+                    <div id="usr-foto-placeholder" class="text-center">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-gray-400"></i>
+                        <p class="text-[10px] text-gray-400 mt-1 uppercase font-bold px-4">Subir Foto o Arrastrar</p>
+                    </div>
+                    <div id="preview-usr-foto" class="absolute inset-0 bg-cover bg-center hidden"></div>
+                    <input type="file" id="inp-usr-foto-file" class="hidden" accept="image/*">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="aqua-label">Teléfono</label>
+                    <input type="tel" id="inp-usr-tel" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="+1 (305) 555-1234">
+                </div>
+                <div>
+                    <label class="aqua-label">Fecha Nacimiento</label>
+                    <input type="date" id="inp-usr-dob" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" style="color-scheme: dark;">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="mb-4">
+                    <label class="aqua-label">Contraseña Temporal</label>
+                    <input type="text" id="inp-usr-pass" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" value="renew123">
+                </div>
+                <div class="mb-4">
+                    <label class="aqua-label">Departamento / Unidad</label>
+                    <input type="text" id="inp-usr-dept" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-4 focus:border-tealAccent focus:outline-none" placeholder="Ej: Grupo Renew">
+                </div>
+            </div>
+
+            <select id="inp-usr-rol" class="w-full bg-bgLight dark:bg-bgDark transition-colors duration-300 border border-gray-300 dark:border-gray-600 rounded p-3 text-gray-800 dark:text-white mb-6 focus:border-tealAccent focus:outline-none">
+                <option value="Vendedor">Vendedor / Representante</option>
+                <option value="Admin">Administrador (BackOffice)</option>
+            </select>
+
+            <div class="flex gap-3 justify-end mt-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <button class="btn-cancel text-gray-500 dark:text-gray-400 dark:text-white px-4 py-2">Cancelar</button>
+                <button id="btn-save-usuario" class="bg-tealAccent text-gray-800 dark:text-white px-6 py-2 rounded font-medium hover:bg-teal-500 shadow-lg shadow-tealAccent/20">Crear Perfil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DETALLE DE TRABAJADOR (Format Bitrix24 Style) -->
+    <div id="modal-worker-detail" class="fixed inset-0 bg-black/70 backdrop-blur-sm nuclear-hidden items-center justify-center z-[100]">
+        <div class="bg-surfaceLight dark:bg-[#121212] w-[950px] max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl flex relative animate-fadeIn">
+            <!-- Botón Cerrar (Esquina) -->
+            <button class="btn-cancel absolute top-4 right-[-50px] bg-sky-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-600 transition-all">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <!-- Column Izquierda (Perfil) -->
+            <div class="w-[340px] bg-white border-r border-[#dde3e6] p-8 flex flex-col items-center">
+                <!-- Profile Header -->
+                <div class="w-full flex justify-between items-center mb-6">
+                    <span class="bg-sky-400 text-white px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest flex items-center gap-1">
+                        ADMINISTRATOR <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                    </span>
+                    <div class="text-right">
+                        <p class="text-[10px] text-red-500 font-bold uppercase flex items-center gap-1 justify-end">
+                            <span class="w-2 h-2 rounded-full bg-red-500"></span> OFFLINE
+                        </p>
+                        <p class="text-[9px] text-gray-400">last seen 2 days ago</p>
+                    </div>
+                </div>
+
+                <!-- Avatar Circle -->
+                <div id="det-usr-avatar" class="w-48 h-48 rounded-full border-[6px] border-white shadow-xl bg-cover bg-center mb-8 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    <i class="fa-solid fa-user text-6xl text-gray-200"></i>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2 w-full mb-10">
+                    <button class="flex-1 border border-[#c6d8e1] text-[#535c69] py-2 rounded-full text-xs font-bold hover:bg-gray-50 transition-colors">CHAT</button>
+                    <button class="flex-1 border border-[#c6d8e1] text-[#535c69] py-2 rounded-full text-xs font-bold hover:bg-gray-50 transition-colors">VIDEO CALL</button>
+                </div>
+
+                <!-- Appreciations -->
+                <div class="w-full">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-[11px] font-black text-[#828b95] uppercase tracking-wider">Appreciations</h4>
+                        <button class="text-[10px] text-sky-500 font-bold hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-heart"></i> Send appreciation
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 mb-8">
+                        <div class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-300">
+                             <i class="fa-solid fa-thumbs-up text-xs"></i>
+                        </div>
+                        <div class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-300">
+                             <i class="fa-solid fa-gift text-xs"></i>
+                        </div>
+                        <div class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-300">
+                             <i class="fa-solid fa-trophy text-xs"></i>
+                        </div>
+                        <div class="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-300">
+                             <i class="fa-solid fa-medal text-xs"></i>
+                        </div>
+                    </div>
+                    <button class="w-full py-2 border border-[#c6d8e1] rounded-full text-[10px] font-black text-[#535c69] uppercase tracking-widest hover:bg-gray-50 transition-colors">
+                        Send Appreciation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Column Derecha (Info) -->
+            <div class="flex-1 p-10">
+                <!-- Sec: Contact Info -->
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <div class="flex justify-between items-center mb-8 border-b border-gray-50 pb-4">
+                        <h3 class="text-lg font-medium text-[#333]">Información de contacto</h3>
+                        <button id="btn-edit-worker-from-detail" class="w-10 h-10 rounded-full flex items-center justify-center bg-gray-50 text-gray-400 hover:text-tealAccent hover:bg-tealAccent/10 transition-all shadow-sm border border-gray-100">
+                             <i class="fa-solid fa-gear text-sm"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6">
+                        <!-- Name & Last Name -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">First name</label>
+                                <p id="det-usr-nombre" class="text-sm font-bold text-[#333]">Michael</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">Last name</label>
+                                <p id="det-usr-apellido" class="text-sm font-bold text-[#333]">Chen</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">Email</label>
+                                <p id="det-usr-email" class="text-sm font-bold text-sky-500">michael@renewsolar.com</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">Position</label>
+                                <p id="det-usr-rol" class="text-sm font-bold text-[#333]">Vendedor</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">Department</label>
+                                <p id="det-usr-dept" class="text-sm font-bold text-[#333]">Grupo Renew</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">Sex</label>
+                                <p class="text-sm font-bold text-[#333]">Male</p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">Mobile phone</label>
+                                <p id="det-usr-tel" class="text-sm font-bold text-[#333] flex items-center gap-2">
+                                    +1 (305) 555-1234 <i class="fa-solid fa-phone text-[10px] text-sky-500"></i>
+                                </p>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-gray-400 font-medium mb-1">Notification language</label>
+                                <p class="text-sm font-bold text-[#333]">Español</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex gap-4">
+                        <button class="text-[10px] text-gray-400 hover:text-sky-500 font-bold underline">Select field</button>
+                        <button class="text-[10px] text-gray-400 hover:text-sky-500 font-bold underline">Create field</button>
+                    </div>
+                </div>
+
+                <!-- Sec: Personal Details -->
+                <div class="bg-white rounded-lg shadow-sm p-6">
+                    <h3 class="text-md font-medium text-[#333] mb-4">Personal details</h3>
+                    <div class="flex items-center gap-4 text-xs text-gray-400 font-medium italic">
+                        <div class="w-12 h-12 rounded-full border-2 border-dashed border-gray-100"></div>
+                        This area contains HR related information and other documentation. It will be available soon.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL: CONFIRMAR RESET -->
+    <div id="modal-reset" class="fixed inset-0 bg-black/80 backdrop-blur-md nuclear-hidden flex-col items-center justify-center z-[100]">
+        <div class="bg-surfaceLight dark:bg-surfaceDark transition-colors duration-300 border border-red-500/50 w-[400px] rounded-xl shadow-[0_0_40px_rgba(239,68,68,0.2)] p-6 text-center">
+            <i class="fa-solid fa-triangle-exclamation text-5xl text-red-500 mb-4"></i>
+            <h3 class="text-xl text-gray-800 dark:text-white font-bold mb-2">¡Peligro Crítico!</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-sm mb-6">Estás a punto de borrar absolutamente toda la base de datos dinámica. Se eliminarán pipelines, pases, y todos los registros del CRM móvil.<br><br>¿Seguro que deseas reiniciar el sistema e inyectar de nuevo los datos de prueba de 'Renew Solar'?</p>
+            
+            <div class="flex gap-3 justify-center">
+                <button class="btn-cancel bg-gray-200 text-gray-800 hover:bg-gray-300 dark:text-white hover:bg-gray-700 px-6 py-2 rounded font-medium transition-colors">Cancelar</button>
+                <button id="btn-confirm-reset" class="bg-red-600 text-gray-800 dark:text-white px-6 py-2 rounded font-medium hover:bg-red-500 shadow-lg shadow-red-500/20 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bomb"></i> Destruir Todo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SUCCESS PROTOCOL -->
+    <div id="modal-success" class="fixed inset-0 bg-black/60 backdrop-blur-md nuclear-hidden flex items-center justify-center z-[200] p-6">
+        <div class="bg-white dark:bg-[#111827] border border-tealAccent/20 w-full max-w-[420px] rounded-[3rem] shadow-2xl p-12 text-center animate-scaleIn relative overflow-hidden group">
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-tealAccent/10 rounded-full blur-3xl group-hover:bg-tealAccent/20 transition-all duration-700"></div>
+            <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all duration-700"></div>
+            
+            <div class="w-24 h-24 bg-tealAccent/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-tealAccent/20 relative">
+                <div class="absolute inset-0 rounded-full bg-tealAccent/20 animate-ping opacity-20"></div>
+                <i class="fa-solid fa-check-double text-4xl text-tealAccent"></i>
+            </div>
+            
+            <h3 class="text-2xl font-black text-gray-900 dark:text-white mb-4 tracking-tighter uppercase">Protocolo Acertado</h3>
+            <p id="success-modal-msg" class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-10 font-medium">El sistema ha procesado la activación correctamente y la secuencia ya se encuentra en marcha.</p>
+            
+            <button class="btn-close-success w-full py-5 bg-tealAccent text-black rounded-2xl font-black uppercase text-[10px] tracking-[0.3em] shadow-teal-glow hover:scale-[1.02] active:scale-95 transition-all">
+                Cerrar Notificación
+            </button>
+        </div>
+    </div>
+
+        <script>
+        // Init theme
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        
+        document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+
+    <!-- Fixed Root Scroll Arrows -->
+    <div id="ctrl-scroll-left" class="arrow-fixed bg-gradient-to-r from-bgLight dark:from-bgDark/80 to-transparent flex justify-start">
+        <div class="arrow-circle text-tealAccent">
+            <i class="fa-solid fa-chevron-left text-3xl"></i>
+        </div>
+    </div>
+    <div id="ctrl-scroll-right" class="arrow-fixed bg-gradient-to-l from-bgLight dark:from-bgDark/80 to-transparent flex justify-end">
+        <div class="arrow-circle text-tealAccent">
+            <i class="fa-solid fa-chevron-right text-3xl"></i>
+        </div>
+    </div>
+
+    <!-- NOTIFICATIONS PANEL (Slide-over) -->
+    <div id="notifications-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[45] hidden transition-opacity duration-300 opacity-0"></div>
+    <div id="notifications-panel" class="fixed top-0 right-0 h-full w-80 bg-[#0f172a] border-l border-gray-800 transform translate-x-full transition-transform duration-300 z-50 shadow-2xl flex flex-col">
+        <div class="p-6 border-b border-gray-800 flex items-center justify-between">
+            <h3 class="text-white font-black uppercase tracking-[0.2em] text-xs">Notificaciones</h3>
+            <button id="btn-close-notifications" class="text-gray-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div id="notifications-list" class="flex-1 overflow-y-auto p-4 space-y-3 hide-scrollbar">
+            <!-- Dynamic Notifications -->
+        </div>
+        <div class="p-4 border-t border-gray-800">
+            <button class="w-full py-2 text-[10px] uppercase font-bold text-gray-500 hover:text-tealAccent transition-all tracking-widest" onclick="document.getElementById('notifications-list').innerHTML = ''; document.getElementById('notifications-badge').classList.add('hidden');">
+                Clear All
+            </button>
+        </div>
+    </div>
+
+    <!-- Module script -->
+    <script type="module" src="./js/admin-app.js"></script>
+</body>
+</html>

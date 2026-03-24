@@ -1,0 +1,19 @@
+{
+  "name": "sistema-completo-renew",
+  "version": "1.0.0",
+  "description": "Sistema de gestión dinámico para Renew Solar",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve ./ -p 3500",
+    "dev": "npx serve ./ -p 3500"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
