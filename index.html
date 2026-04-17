@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d9488" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <title>Renew Solar – Portal de Ventas</title>
+  <meta name="description" content="Portal interno del equipo de ventas de Renew Solar. Gestiona tus proyectos solares." />
+
+  <!-- Favicon using logo -->
+  <link rel="icon" type="image/png" href="assets/images/logo.png" />
+  <link rel="apple-touch-icon" href="assets/images/logo.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAmuV4zmbor3JagjOJn2WKUcRA0SUGsh3U&libraries=places"></script>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ══════════════════════════════════════
+       SCREEN 1: LOGIN
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-login" aria-label="Login">
+    <!-- Rendered by login.js -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 1.5: HUB
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-hub" aria-label="Selector de Ecosistema">
+    <!-- Rendered by hub.js -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2.5: CLIENTS
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-clients" aria-label="Cartera de Clientes">
+    <div id="vista-clientes" class="w-full min-h-screen pb-24" style="background: var(--bg);">
+      <header class="flex flex-col items-center text-center px-10 w-full" style="background: var(--surface); padding: 32px 20px 24px; border-bottom: 1px solid var(--border); box-shadow: var(--shadow-sm); margin-bottom: 30px;">
+        <h1 style="color: var(--text-primary); font-size: 1.8rem; font-weight: 950; letter-spacing: -1px; line-height: 1; margin: 0; text-transform: uppercase;">Cartera de Clientes</h1>
+        <p style="color: var(--primary); font-size: 0.85rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-top: 6px;">Gestión de prospectos</p>
+        <button id="btn-nuevo-cliente" class="btn-cyan font-bold py-2 px-4 rounded-full" style="margin-top: 20px; background-color: var(--primary); color: white; border: none; padding: 10px 24px; border-radius: 9999px; cursor: pointer; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: var(--shadow-fab);">+ Nuevo Prospecto</button>
+      </header>
+      <div id="lista-clientes-movil" class="flex flex-col gap-4 px-4"></div>
+      
+      <!-- Modal Simple de Guardado Rápido -->
+      <div id="modal-nuevo-cliente" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+        <div style="background:var(--surface); width:90%; max-width:400px; padding:24px; border-radius:16px;">
+          <h3 style="margin-bottom:16px; color:white; font-size:1.2rem;">Guardado Rápido</h3>
+          
+          <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:12px; margin-bottom:12px">
+            <div class="field-group">
+                <label style="color:var(--text-muted); font-size:0.8rem">Nombre del Cliente *</label>
+                <input type="text" id="quick-nombre" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" required />
+            </div>
+            <div class="field-group">
+                <label style="color:var(--text-muted); font-size:0.8rem">Apellido</label>
+                <input type="text" id="quick-apellido" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" />
+            </div>
+          </div>
+          
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+            <div class="field-group">
+              <label style="color:var(--text-muted); font-size:0.8rem">Teléfono *</label>
+              <input type="tel" id="quick-tel" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" required />
+            </div>
+            <div class="field-group">
+              <label style="color:var(--text-muted); font-size:0.8rem">Email *</label>
+              <input type="email" id="quick-email" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" required />
+            </div>
+          </div>
+          
+          <div class="field-group" style="margin-bottom:12px">
+            <label style="color:var(--text-muted); font-size:0.8rem">Dirección *</label>
+            <input type="text" id="quick-direccion" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" required />
+          </div>
+
+          <button id="toggle-detalles" style="background:transparent; border:none; color:var(--primary); text-decoration:underline; cursor:pointer; margin-bottom:16px; font-size:0.85rem">Ver detalles adicionales</button>
+          
+          <div id="quick-detalles-extra" style="display:none; margin-bottom:16px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px">
+                <div class="field-group">
+                  <label style="color:var(--text-muted); font-size:0.8rem">State ID</label>
+                  <input type="text" id="quick-state-id" placeholder="ID del Estado..." style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" />
+                </div>
+                <div class="field-group">
+                  <label style="color:var(--text-muted); font-size:0.8rem">Fecha de Nacimiento</label>
+                  <input type="date" id="quick-dob" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" />
+                </div>
+            </div>
+            <div class="field-group" style="margin-bottom:12px">
+              <label style="color:var(--text-muted); font-size:0.8rem">ID / Licencia (Texto)</label>
+              <input type="text" id="quick-licencia" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" />
+            </div>
+            <div class="field-group" style="margin-bottom:12px">
+              <label style="color:var(--text-muted); font-size:0.8rem">Subir Foto ID (Adjunto)</label>
+              <input type="file" id="quick-foto-id" accept="image/*" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white" />
+            </div>
+            <div class="field-group" style="margin-bottom:12px">
+              <label style="color:var(--text-muted); font-size:0.8rem">Notas</label>
+              <textarea id="quick-notas" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:white; min-height:60px"></textarea>
+            </div>
+          </div>
+          
+          <div style="display:flex; gap:12px">
+            <button id="btn-cancelar-quick" style="flex:1; padding:12px; border-radius:8px; border:none; background:var(--surface-alt); color:white; cursor:pointer">Cancelar</button>
+            <button id="btn-guardar-quick" style="flex:1; padding:12px; border-radius:8px; border:none; background:var(--primary); color:white; cursor:pointer; font-weight:bold">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 2: DASHBOARD
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-dashboard" aria-label="Dashboard – Mis Proyectos">
+    <!-- Rendered by dashboard.js -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 3: NEW CLIENT FORM
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-new-client" aria-label="Nuevo Proyecto Solar">
+    <!-- Rendered by newClient.js -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 4: PROJECT DETAIL
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-detail" aria-label="Detalle del Proyecto">
+    <!-- Rendered by projectDetail.js -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 5: SALA VIRTUAL (ACADEMY)
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-academy" aria-label="Sala Virtual / Academia">
+    <!-- Rendered by academy.js -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       SCREEN 5.5: INVENTARIO TÉCNICO
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-inventory-tech" aria-label="Inventario Técnico">
+    <!-- Rendered by inventory.js -->
+  </section>
+
+  <!-- ══════════════════════════════════════
+       BOTTOM NAV BAR (Mobile Global)
+       ══════════════════════════════════════ -->
+  <nav id="bottom-nav">
+      <!-- Top Group -->
+      <div class="nav-group-top">
+          <!-- Branding (Desktop Only) -->
+          <div class="sidebar-header">
+              <div class="sidebar-logo">
+                  <img src="assets/images/renew copia logo.png" alt="Logo">
+                  <div class="sidebar-brand-text">
+                    <span class="brand-equipo">EQUIPO</span>
+                    <span class="brand-renew">RENEW</span>
+                  </div>
+              </div>
+              <button id="btn-toggle-sidebar" class="sidebar-toggle" title="Contraer menú">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+          </div>
+
+          <!-- Izquierda 1: Inicio -->
+          <a href="#dashboard" class="nav-item" data-screen="dashboard">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              <span>Inicio</span>
+          </a>
+
+          <!-- Izquierda 2: Clientes -->
+          <a href="#clients" class="nav-item" data-screen="clients">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>Clientes</span>
+          </a>
+          
+          <!-- Centro: Flotante + -->
+          <a href="#new-client" class="nav-item nav-item-plus" data-screen="new-client">
+              <div class="plus-circle">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              <span>Nuevo</span>
+          </a>
+
+          <!-- Derecha 1: Sala Virtual -->
+          <a href="#academy" class="nav-item" data-screen="academy">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              <span>Academia</span>
+          </a>
+      </div>
+
+      <!-- Bottom Group -->
+      <div class="nav-group-bottom">
+          <!-- Theme Toggle -->
+          <button id="btn-theme-toggle" class="nav-item nav-btn-theme desktop-only" title="Cambiar tema">
+              <svg class="sun-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              <svg class="moon-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <span>Tema</span>
+          </button>
+
+          <!-- Derecha 2: Menú -->
+          <a href="#menu" class="nav-item" data-screen="menu">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              <span>Menú</span>
+          </a>
+      </div>
+  </nav>
+
+
+  <!-- ══════════════════════════════════════
+       SCREEN 6: FULL MENU
+       ══════════════════════════════════════ -->
+  <section class="screen" id="screen-menu" aria-label="Menú Principal">
+    <!-- Rendered by menu.js -->
+  </section>
+
+</div><!-- /#app -->
+
+<!-- MODAL DE ANUNCIOS GLOBALES (INTERCEPTOR) -->
+<div id="modal-anuncio-global" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:99999; justify-content:center; align-items:center;">
+  <div class="animate-bounce-in" style="background:var(--surface); width:90%; max-width:350px; padding:24px; border-radius:24px; border:1px solid rgba(0, 245, 212, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 20px rgba(0, 245, 212, 0.1); text-align:center;">
+    <div style="width:50px; height:50px; border-radius:50%; background:rgba(0, 245, 212, 0.1); color:var(--primary); display:flex; justify-content:center; align-items:center; margin:0 auto 16px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+    </div>
+    <h3 id="anuncio-global-titulo" style="margin-bottom:12px; color:white; font-size:1.2rem; font-weight:800; text-transform:uppercase; letter-spacing:1px;">Nuevo Anuncio</h3>
+    <p id="anuncio-global-mensaje" style="color:var(--text-muted); font-size:0.9rem; line-height:1.5; margin-bottom:24px; text-align:left;"></p>
+    <button id="anuncio-global-entendido" style="width:100%; padding:14px; border-radius:12px; border:none; background:var(--primary); color:var(--bg); cursor:pointer; font-weight:900; font-size:0.95rem; text-transform:uppercase; letter-spacing:2px; box-shadow: 0 4px 12px rgba(0,245,212,0.3);">Entendido</button>
+  </div>
+</div>
+<!-- SPA Entry (ES Modules) -->
+<script type="module" src="js/app.js?v=4"></script>
+
+</body>
+</html>
